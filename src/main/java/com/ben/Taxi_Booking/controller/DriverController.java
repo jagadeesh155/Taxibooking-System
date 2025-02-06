@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/driver")
+@RequestMapping("/driver")
 public class DriverController {
 
     private final DriverService driverService;

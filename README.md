@@ -84,6 +84,31 @@ Set your email name and password in the `application.properties` file in the `sr
 
 Set your Stripe API key in the `application.properties` file in the `src/main/resources` directory.
 
+
+## API Endpoints
+
+| Endpoint                      | Method | Description                      |
+|-------------------------------|--------|----------------------------------|
+| `/api/auth/user/signup`       | POST   | Register a new user              |
+| `/api/auth/signup`            | POST   | Login to the system              |
+| `/api/auth//driver/signup`    | POST   | Register a new Driver            |
+| `/user`                       | GET    | List all players                 |
+| `/user/{id}`                  | GET    | Get details of a specific player |
+| `/user/profile`               | GET    | Get User Profile                 |
+| `/user/rides/completed`       | GET    | Get User completed Rides         |
+| `/user/payment/{id}`          | POST   | Pay Through Stripe               |
+| `/driver/profile`             | GET    | Get Driver Profile               |
+| `/driver/{id}/currentRide`    | GET    | Get Driver Current Drive         |
+| `/driver/{id}/allocatedRides` | GET    | Get allocated Ride               |
+| `/driver/rides/completed`     | GET    | Get completed Rides              |
+| `/ride/request`               | POST   | Create a new Ride                |
+| `/ride/accept/{rideId}`       | PUT    | Accept Ride                      |
+| `/ride/reject/{rideId}`       | PUT    | Reject Ride                      |
+| `/ride/start/{rideId}`        | PUT    | Start ride                       |
+| `/ride/complete/{rideId}`     | PUT    | Finish the ride                  |
+| `/ride/rideId`                | GET    | Find ride by id                  |
+
+
 ## Contact
 
 If you are having any issue ask me on : https://www.linkedin.com/in/aditya-zaware-310904259/

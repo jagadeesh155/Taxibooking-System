@@ -40,7 +40,7 @@ public class UserController {
         return ResponseEntity.ok(completedRides);
     }
 
-    @GetMapping("/all")
+    @GetMapping()
     public ResponseEntity<List<User>> getAllUsers() throws UserException {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
