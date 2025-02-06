@@ -109,6 +109,11 @@ Set your Stripe API key in the `application.properties` file in the `src/main/re
 | `/ride/rideId`                | GET    | Find ride by id                  |
 
 
+## Note 
+
+-In this application i am not making some CRUD Endpoints like - update, delete Users
+-If you need it just do its
+
 ## Contact
 
 If you are having any issue ask me on : https://www.linkedin.com/in/aditya-zaware-310904259/
