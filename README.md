@@ -116,4 +116,4 @@ Set your Stripe API key in the `application.properties` file in the `src/main/re
 
 ## Contact
 
-If you are having any issue ask me on : https://www.linkedin.com/in/aditya-zaware-310904259/
+If you are having any issue ask me on : https://www.linkedin.com/in/mg-jagadeesh-31850b23b/
