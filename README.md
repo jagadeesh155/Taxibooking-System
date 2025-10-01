@@ -60,7 +60,7 @@ Before you begin, ensure you have met the following requirements:
 
 1. Clone the repository:
    
-   git clone https://github.com/AdityaZaware/Taxi-Booking
+   git clone https://github.com/jagadeesh155/Taxibooking-System.git
 
 2. Navigate to the project directory:
 
