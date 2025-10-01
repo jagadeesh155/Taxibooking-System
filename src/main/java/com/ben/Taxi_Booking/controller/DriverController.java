@@ -27,7 +27,8 @@ public class DriverController {
 
         Driver driver = driverService.getReqDriverProfile(jwt);
 
-        return new ResponseEntity<Driver>(driver, HttpStatus.OK);
+        return new ResponseEntity
+                <Driver>(driver, HttpStatus.OK);
     }
 
     @GetMapping("/{id}/currentRide")

@@ -79,20 +79,23 @@ public class DriverServiceImpl implements DriverService {
 
         Driver driver = new Driver();
 
-        String pass = driver.getPassword();
-        String password = passwordEncoder.encode(driverSignUpRequest.getPassword());
+        // ⭐ CORRECT WAY: ENCODE THE PASSWORD BEFORE SAVING
+        String rawPassword = driverSignUpRequest.getPassword();
+        String encodedPassword = passwordEncoder.encode(rawPassword);
 
         driver.setEmail(driverSignUpRequest.getEmail());
         driver.setName(driverSignUpRequest.getName());
         driver.setMobile(driverSignUpRequest.getMobile());
-        driver.setPassword(password);
+        driver.setPassword(encodedPassword); // Set the encoded password
         driver.setLicense(savedLicense);
         driver.setVehicle(savedVehicle);
         driver.setRole(UserRole.DRIVER);
 
         Driver createDriver = driverRepo.save(driver);
 
-        emailService.driverRegistrationEmail(createDriver.getEmail(), createDriver.getName(), pass);
+        // Use the raw password 'rawPassword' if needed for the email (though sending raw passwords is bad practice)
+        // I'm using the raw password 'rawPassword' here to match what you might have intended to send.
+        emailService.driverRegistrationEmail(createDriver.getEmail(), createDriver.getName(), rawPassword);
 
 
         savedLicense.setDriver(createDriver);
@@ -118,7 +121,7 @@ public class DriverServiceImpl implements DriverService {
                 continue;
             }
 
-            if (ride.getDeclinedDrivers().contains(driver.getId())) {
+            if (ride != null && ride.getDeclinedDrivers().contains(driver.getId())) {
                 continue;
             }
 
@@ -127,7 +130,7 @@ public class DriverServiceImpl implements DriverService {
 
             double distance = distanceCalculator.calculateDistance(pickupLatitude, pickupLongitude, driverLatitude, driverLongitude);
 
-           availableDriver.add(driver);
+            availableDriver.add(driver);
 
         }
 

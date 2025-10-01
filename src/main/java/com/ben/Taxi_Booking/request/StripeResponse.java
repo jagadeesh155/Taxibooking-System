@@ -1,10 +1,14 @@
 package com.ben.Taxi_Booking.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
-@Builder
+@Data // Generates getters, setters, toString, equals, and hashCode
+@NoArgsConstructor // Generates a constructor with no arguments
+@AllArgsConstructor // Generates a constructor with all fields as arguments
+@Builder // <--- THIS is the CRITICAL fix, generates the static builder() method
 public class StripeResponse {
 
     private String status;
@@ -12,49 +16,4 @@ public class StripeResponse {
     private String sessionId;
     private String sessionUrl;
 
-
-
-    public StripeResponse() {
-    }
-
-    public StripeResponse(String status, String message, String sessionId, String sessionUrl) {
-        this.status = status;
-        this.message = message;
-        this.sessionId = sessionId;
-        this.sessionUrl = sessionUrl;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getSessionUrl() {
-        return sessionUrl;
-    }
-
-    public void setSessionUrl(String sessionUrl) {
-        this.sessionUrl = sessionUrl;
-    }
 }

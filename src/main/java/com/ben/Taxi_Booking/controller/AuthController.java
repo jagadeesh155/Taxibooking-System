@@ -35,15 +35,10 @@ public class AuthController {
 
     private final UserRepo userRepo;
     private final DriverRepo driverRepo;
-
     private final PasswordEncoder passwordEncoder;
-
     private final JwtProviderUtil jwtProviderUtil;
-
     private final CustomUserDetailsService customUserDetailsService;
-
     private final DriverService driverService;
-
     private final EmailService emailService;
 
     public AuthController(UserRepo userRepo, DriverRepo driverRepo, PasswordEncoder passwordEncoder, JwtProviderUtil jwtProviderUtil, CustomUserDetailsService customUserDetailsService, DriverService driverService, EmailService emailService) {
@@ -56,8 +51,7 @@ public class AuthController {
         this.emailService = emailService;
     }
 
-
-
+    // --- USER SIGNUP ---
     @PostMapping("/user/signup")
     public ResponseEntity<JwtResponse> signup(@RequestBody SignupRequest signupRequest) throws UserException {
 
@@ -69,7 +63,7 @@ public class AuthController {
         User user = userRepo.findByEmail(email);
 
         if(user != null) {
-            throw new UserException("User already exists" + email);
+            throw new UserException("User already exists: " + email);
         }
 
         String encodePassword = passwordEncoder.encode(password);
@@ -85,104 +79,111 @@ public class AuthController {
 
         emailService.userRegistrationEmail(saveUser.getEmail(), saveUser.getName(), password);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(saveUser.getEmail(),
-                saveUser.getPassword());
+        // Load UserDetails to get authorities
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(saveUser.getEmail());
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Create authenticated token
+        Authentication authenticatedToken = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities() // Credentials set to null
+        );
 
-        String jwt = jwtProviderUtil.generateJwtToken(authentication);
+        String jwt = jwtProviderUtil.generateJwtToken(authenticatedToken);
 
         JwtResponse response = new JwtResponse();
-
         response.setJwt(jwt);
         response.setAuthenticated(true);
         response.setError(false);
         response.setErrorMessage(null);
         response.setRole(UserRole.USER);
-        response.setMessage("User created successfully"+ saveUser);
+        response.setMessage("User created successfully: " + saveUser.getName());
 
         return new ResponseEntity<JwtResponse>(response,HttpStatus.OK);
     }
 
+    // --- DRIVER SIGNUP ---
     @PostMapping("/driver/signup")
     public ResponseEntity<JwtResponse> driverSignUp(@RequestBody DriverSignUpRequest driverSignUpRequest) {
 
         Driver driver = driverRepo.findByEmail(driverSignUpRequest.getEmail());
-
         JwtResponse jwtResponse = new JwtResponse();
 
         if(driver != null) {
-
             jwtResponse.setAuthenticated(false);
             jwtResponse.setError(true);
             jwtResponse.setErrorMessage("Driver already exists");
             jwtResponse.setRole(UserRole.DRIVER);
             jwtResponse.setMessage("Driver already exists");
-
             return new ResponseEntity<>(jwtResponse,HttpStatus.BAD_REQUEST);
         }
 
         Driver createdDriver = driverService.registerDriver(driverSignUpRequest);
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(createdDriver.getEmail(),
-                createdDriver.getPassword());
+        // Re-load UserDetails to get authorities
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(createdDriver.getEmail());
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Create authenticated token
+        Authentication authenticatedToken = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities() // Credentials set to null
+        );
 
-        String jwt = jwtProviderUtil.generateJwtToken(authentication);
+        String jwt = jwtProviderUtil.generateJwtToken(authenticatedToken);
 
         JwtResponse response = new JwtResponse();
-
         response.setJwt(jwt);
         response.setAuthenticated(true);
         response.setError(false);
         response.setErrorMessage(null);
         response.setRole(UserRole.DRIVER);
-        response.setMessage("Account created successfully"+ createdDriver.getName());
+        response.setMessage("Account created successfully: " + createdDriver.getName());
 
         return new ResponseEntity<JwtResponse>(response,HttpStatus.OK);
-
-
     }
 
+    // --- LOGIN ---
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest request) throws BackingStoreException {
 
         String email = request.getEmail();
         String password = request.getPassword();
 
+        // Call the helper method to authenticate
         Authentication auth = AuthenticateAction(email, password);
 
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
+        // Generate JWT using the authenticated object
         String jwt = jwtProviderUtil.generateJwtToken(auth);
 
         JwtResponse response = new JwtResponse();
-
         response.setJwt(jwt);
         response.setAuthenticated(true);
         response.setError(false);
         response.setErrorMessage(null);
-        response.setRole(UserRole.USER);
+
+        // Extract role from the successfully authenticated object
+        response.setRole(UserRole.valueOf(auth.getAuthorities().iterator().next().getAuthority().substring(5)));
         response.setMessage("Your account logged in successfully");
 
         return new ResponseEntity<>(response,HttpStatus.ACCEPTED);
-
-
     }
 
-    private Authentication AuthenticateAction(String email, String password) throws BackingStoreException {
+    // --- AUTHENTICATION HELPER METHOD ---
+    private Authentication AuthenticateAction(String email, String password) throws BadCredentialsException {
+        // Load the user details (contains email, HASHED password, and authorities)
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
         if(userDetails == null) {
-            throw new BackingStoreException("Invalid User");
+            throw new BadCredentialsException("Invalid User/Email");
         }
 
+        // 1. Match the raw password (from Postman) against the HASHED password (from DB)
         if(!passwordEncoder.matches(password, userDetails.getPassword())) {
             throw new BadCredentialsException("Invalid Password");
         }
 
-        return new UsernamePasswordAuthenticationToken(userDetails,userDetails);
+        // 2. Return an AUTHENTICATED token with the user's authorities (roles).
+        return new UsernamePasswordAuthenticationToken(
+                userDetails.getUsername(),        // Principal (e.g., email)
+                null,                             // Credentials (set to null for authenticated token)
+                userDetails.getAuthorities()      // Authorities (Roles)
+        );
     }
 }

@@ -42,7 +42,7 @@ public class StripService {
         SessionCreateParams.LineItem.PriceData priceData =
                 SessionCreateParams.LineItem.PriceData.builder()
                         .setCurrency(currency)
-                        .setUnitAmount((long)ride.getFair())
+                        .setUnitAmount((long)ride.getFair()*100)
                         .setProductData(productData)
                         .build();
 

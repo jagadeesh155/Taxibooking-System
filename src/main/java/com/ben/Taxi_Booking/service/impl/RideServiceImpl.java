@@ -29,7 +29,6 @@ public class RideServiceImpl implements RideService {
     private final DriverService driverService;
     private final DriverRepo driverRepo;
     private final Calculaters calculaters;
-
     private final EmailService emailService;
 
 
@@ -50,10 +49,13 @@ public class RideServiceImpl implements RideService {
         String pickupArea = request.getPickupArea();
         String destinationArea = request.getDestinationArea();
 
-        Ride existingRide = new Ride();
-
-        List<Driver> avaliableDrivers = driverService.getAvailableDrivers(pickupLatitude, pickupLongitude,
-                 existingRide);
+        // ✅ FIX 2: Do NOT create an empty Ride object. Pass null if the driver search doesn't require it.
+        // Assuming getAvailableDrivers has a logic to handle the null ride object for initial search.
+        List<Driver> avaliableDrivers = driverService.getAvailableDrivers(
+                pickupLatitude,
+                pickupLongitude,
+                null // Passing null or using an overloaded method without the 'Ride' argument is safer here.
+        );
 
         Driver nearestDriver = driverService.findNearestDrive(avaliableDrivers, pickupLatitude, pickupLongitude);
 
@@ -99,17 +101,18 @@ public class RideServiceImpl implements RideService {
 
         driver.setCurrRide(ride);
 
-         Random random = new Random();
+        Random random = new Random();
 
-         int otp = random.nextInt(10000);
+        int otp = random.nextInt(10000);
 
-         emailService.sendOtp(driver.getEmail(), otp);
+        // Assuming emailService.sendOtp is fine
+        emailService.sendOtp(driver.getEmail(), otp);
 
-         ride.setOtp(otp);
+        ride.setOtp(otp);
 
-         driverRepo.save(driver);
+        driverRepo.save(driver);
 
-         rideRepo.save(ride);
+        rideRepo.save(ride);
     }
 
     @Override
@@ -185,8 +188,7 @@ public class RideServiceImpl implements RideService {
 
     @Override
     public StripeResponse onlinePayment(Long amount) {
-
-
+        // Implementation needed here
         return null;
     }
 
@@ -198,10 +200,10 @@ public class RideServiceImpl implements RideService {
         rideRepo.save(ride);
     }
 
+    // ✅ FIX 1: Use orElseThrow to handle Optional correctly.
     @Override
     public Ride findRideById(int rideId) throws RideException {
-        Ride ride = rideRepo.findById(rideId).get();
-
-        return ride;
+        return rideRepo.findById(rideId)
+                .orElseThrow(() -> new RideException("Ride not found with ID: " + rideId));
     }
 }

@@ -21,8 +21,7 @@ public class UserServiceImpl implements UserService {
         this.jwtProviderUtil = jwtProviderUtil;
     }
 
-
-
+    // This method is fine, but relies on a null check. Keeping it for now.
     @Override
     public User getUserProfile(String token) throws UserException {
 
@@ -37,6 +36,7 @@ public class UserServiceImpl implements UserService {
         throw new UserException("User not found");
     }
 
+    // This method is fine, but relies on a null check. Keeping it for now.
     @Override
     public User findUserByEmail(String email) throws UserException {
         User user = userRepo.findByEmail(email);
@@ -48,22 +48,21 @@ public class UserServiceImpl implements UserService {
         throw new UserException("User not found");
     }
 
+    // ⭐ CRITICAL FIX: Use orElseThrow to handle Optional correctly.
     @Override
     public User findUserById(Integer id) throws UserException {
-        User user = userRepo.findById(id).get();
+        // Correct way to handle Optional: Throw the custom exception if the user is not found.
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new UserException("User not found with ID: " + id));
 
-        if(user != null) {
-            return user;
-        }
-
-        throw new UserException("User not found");
+        return user;
     }
 
     @Override
     public List<User> getAllUsers() throws UserException {
         List<User> users = userRepo.findAll();
 
-        if(users == null) {
+        if(users == null || users.isEmpty()) { // Added check for empty list
             throw new UserException("No User found");
         }
 
@@ -72,6 +71,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<Ride> completedRide(Integer userId) throws UserException {
+        // Assuming getCompletedRides handles null/empty list or throws an exception internally
         List<Ride> completedRides = userRepo.getCompletedRides(userId);
         return completedRides;
     }

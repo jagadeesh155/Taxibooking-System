@@ -15,6 +15,8 @@ import com.ben.Taxi_Booking.service.RideService;
 import com.ben.Taxi_Booking.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,7 +25,6 @@ public class RideController {
 
     private final RideService rideService;
     private final DriverService driverService;
-
     private final UserService userService;
 
     public RideController(RideService rideService, DriverService driverService, UserService userService) {
@@ -34,9 +35,13 @@ public class RideController {
 
 
     @PostMapping("/request")
-    public ResponseEntity<RideDto> userRequestRide(@RequestBody RideRequest request, @RequestHeader("Authorization") String jwt) throws DriverException, UserException {
+    public ResponseEntity<RideDto> userRequestRide(@RequestBody RideRequest request) throws DriverException, UserException {
 
-        User user = userService.getUserProfile(jwt);
+        // ⭐ 403 FIX: Get the authenticated user's email directly from the Security Context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+
+        User user = userService.findUserByEmail(userEmail);
 
         Ride ride = rideService.requestRide(request, user);
 
@@ -61,6 +66,7 @@ public class RideController {
     @PutMapping("/reject/{rideId}")
     public ResponseEntity<String> rejectRide(@PathVariable int rideId, @RequestHeader("Authorization") String jwt) throws DriverException, UserException, RideException {
 
+        // Note: For full consistency, this should also use SecurityContextHolder for the Driver profile
         Driver driver = driverService.getReqDriverProfile(jwt);
 
         rideService.declineRide(rideId, driver.getId());
@@ -95,6 +101,7 @@ public class RideController {
     @GetMapping("/{rideId}")
     public ResponseEntity<RideDto> findRideById(@PathVariable int rideId, @RequestHeader("Authorization") String jwt) throws DriverException, UserException, RideException {
 
+        // Note: For full consistency, this should also use SecurityContextHolder for the User profile
         User user = userService.getUserProfile(jwt);
 
         Ride ride = rideService.findRideById(rideId);

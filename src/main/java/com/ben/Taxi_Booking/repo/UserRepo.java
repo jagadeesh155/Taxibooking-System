@@ -14,6 +14,6 @@ public interface UserRepo extends JpaRepository<User, Integer> {
 
     public User findByEmail(String email);
 
-    @Query("select r from Ride r where r.status='COMPLETED' and r.user.id=:userId")
+    @Query("SELECT r FROM Ride r WHERE r.user.id = :userId AND r.status = com.ben.Taxi_Booking.enums.RideStatus.COMPLETED")
     List<Ride> getCompletedRides(@Param("userId") Integer userId);
 }
